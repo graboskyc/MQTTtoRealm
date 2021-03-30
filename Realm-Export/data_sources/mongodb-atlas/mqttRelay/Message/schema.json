@@ -1,0 +1,29 @@
+{
+    "bsonType": "object",
+    "properties": {
+        "_id": {
+            "bsonType": "objectId"
+        },
+        "_pk": {
+            "bsonType": "string"
+        },
+        "applicationMessage": {
+            "bsonType": "string"
+        },
+        "clientId": {
+            "bsonType": "string"
+        },
+        "payload": {
+            "bsonType": "string"
+        },
+        "topic": {
+            "bsonType": "string"
+        }
+    },
+    "required": [
+        "_id",
+        "_pk",
+        "applicationMessage"
+    ],
+    "title": "Message"
+}

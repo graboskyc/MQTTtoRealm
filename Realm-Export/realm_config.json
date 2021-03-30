@@ -1,0 +1,8 @@
+{
+    "app_id": "mqtttorealm-rmvvn",
+    "config_version": 20210101,
+    "name": "mqtttorealm",
+    "location": "US-VA",
+    "deployment_model": "LOCAL",
+    "environment": "production"
+}

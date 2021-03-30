@@ -1,0 +1,23 @@
+{
+    "name": "mongodb-atlas",
+    "type": "mongodb-atlas",
+    "config": {
+        "clusterName": "Example",
+        "readPreference": "primary",
+        "sync": {
+            "state": "enabled",
+            "database_name": "mqttRelay",
+            "partition": {
+                "key": "_pk",
+                "type": "string",
+                "required": true,
+                "permissions": {
+                    "read": true,
+                    "write": true
+                }
+            }
+        },
+        "wireProtocolEnabled": false
+    },
+    "version": 1
+}
