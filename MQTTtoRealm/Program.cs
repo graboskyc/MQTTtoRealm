@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Nito.AsyncEx;
 using MongoDB.Bson;
@@ -12,6 +12,8 @@ namespace MQTTtoRealm
 {
     class Program
     {
+        private static SyncConfiguration _realmConfig;
+
         static void Main(string[] args)
         {
             Message m = new Message();
@@ -22,53 +24,71 @@ namespace MQTTtoRealm
             if (args.Length != 2)
             {
                 Console.WriteLine("Need 2 args: realm app ID followed by API key for auth in that app.");
-            } else {
-                string realmAppId = args[0];
-                string apiKey = args[1];
-
-                // mqtt setup
-                var optionsBuilder = new MqttServerOptionsBuilder()
-                    .WithConnectionBacklog(100)
-                    .WithDefaultEndpointPort(1883)
-                    .WithApplicationMessageInterceptor(context =>
-                    {
-                        context.AcceptPublish = true;
-                        AsyncContext.Run(async () => await NewMessageAsync(realmAppId, apiKey, context));
-                    });
-                var mqttServer = new MqttFactory().CreateMqttServer();
-                mqttServer.StartAsync(optionsBuilder.Build());
-
-                // wait forever
-                Console.WriteLine("Press any key to exit.");
-                Console.ReadLine();
-
-                // cleanup
-                mqttServer.StopAsync();
+                return;
             }
-            
+
+            var realmAppId = args[0];
+            var apiKey = args[1];
+
+            StartAsync(realmAppId, apiKey).Wait();
         }
 
-        private static async Task NewMessageAsync(string realmAppId, string apiKey, MqttApplicationMessageInterceptorContext context)
+        private static async Task StartAsync(string realmAppId, string apiKey)
         {
-            Console.WriteLine("Got message!");
+            // realm setup
             var app = App.Create(realmAppId);
             var user = await app.LogInAsync(Credentials.ApiKey(apiKey));
-            string partition = $"user={ user.Id }";
-            var config = new SyncConfiguration(partition, user);
-            var realm = await Realm.GetInstanceAsync(config);
+            var partition = $"user={user.Id}";
+            _realmConfig = new SyncConfiguration(partition, user);
+
+            // mqtt setup
+            var optionsBuilder = new MqttServerOptionsBuilder()
+                .WithConnectionBacklog(100)
+                .WithDefaultEndpointPort(1883)
+                .WithApplicationMessageInterceptor(context =>
+                {
+                    context.AcceptPublish = true;
+                    HandleNewMessage(context);
+                });
+
+            var mqttServer = new MqttFactory().CreateMqttServer();
+            await mqttServer.StartAsync(optionsBuilder.Build());
+
+            // wait forever
+            Console.WriteLine("Press any key to exit.");
+            Console.ReadLine();
+
+            // cleanup
+            await mqttServer.StopAsync();
+
+            // wait for Realm uploads
+            AsyncContext.Run(async () =>
+            {
+                using var realm = Realm.GetInstance(_realmConfig);
+                await realm.GetSession().WaitForUploadAsync();
+            });
+        }
+
+        private static void HandleNewMessage(MqttApplicationMessageInterceptorContext context)
+        {
+            Console.WriteLine("Got message!");
+
+            using var realm = Realm.GetInstance(_realmConfig);
             var payload = context.ApplicationMessage?.Payload == null ? null : Encoding.UTF8.GetString(context.ApplicationMessage?.Payload);
 
             realm.Write(() =>
             {
-                var msg = new Message { 
+                var msg = new Message
+                { 
                     ApplicationMessage = "From .NET", 
-                    Partition = partition,
                     Payload = payload,
                     ClientId = context.ClientId,
                     Topic = context.ApplicationMessage.Topic
                 };
+
                 realm.Add(msg);
             });
+
             Console.WriteLine("\tWritten!");
         }
 
@@ -77,9 +97,6 @@ namespace MQTTtoRealm
             [PrimaryKey]
             [MapTo("_id")]
             public ObjectId Id { get; set; } = ObjectId.GenerateNewId();
-            [MapTo("_pk")]
-            [Required]
-            public string Partition { get; set; }
             [MapTo("applicationMessage")]
             [Required]
             public string ApplicationMessage { get; set; }
@@ -90,7 +107,5 @@ namespace MQTTtoRealm
             [MapTo("payload")]
             public string Payload { get; set; }
         }
-
-        
     }
 }
