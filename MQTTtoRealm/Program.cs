@@ -12,12 +12,8 @@ namespace MQTTtoRealm
 {
     class Program
     {
-        private static SyncConfiguration _realmConfig;
-
         static void Main(string[] args)
         {
-            Message m = new Message();
-
             Console.WriteLine("Opening...");
 
             // parse cli args
@@ -39,7 +35,7 @@ namespace MQTTtoRealm
             var app = App.Create(realmAppId);
             var user = await app.LogInAsync(Credentials.ApiKey(apiKey));
             var partition = $"user={user.Id}";
-            _realmConfig = new SyncConfiguration(partition, user);
+            RealmConfiguration.DefaultConfiguration = new SyncConfiguration(partition, user);
 
             // mqtt setup
             var optionsBuilder = new MqttServerOptionsBuilder()
@@ -64,7 +60,7 @@ namespace MQTTtoRealm
             // wait for Realm uploads
             AsyncContext.Run(async () =>
             {
-                using var realm = Realm.GetInstance(_realmConfig);
+                using var realm = Realm.GetInstance();
                 await realm.GetSession().WaitForUploadAsync();
             });
         }
@@ -73,7 +69,7 @@ namespace MQTTtoRealm
         {
             Console.WriteLine("Got message!");
 
-            using var realm = Realm.GetInstance(_realmConfig);
+            using var realm = Realm.GetInstance();
             var payload = context.ApplicationMessage?.Payload == null ? null : Encoding.UTF8.GetString(context.ApplicationMessage?.Payload);
 
             realm.Write(() =>
