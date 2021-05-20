@@ -74,12 +74,10 @@ namespace MQTTtoRealm
 
             realm.Write(() =>
             {
-                var msg = new Message
+                var msg = new IOTDataPoint
                 { 
-                    ApplicationMessage = "From .NET", 
-                    Payload = payload,
-                    ClientId = context.ClientId,
-                    Topic = context.ApplicationMessage.Topic
+                    Reading = Int32.Parse(payload),
+                    DeviceName = context.ClientId
                 };
 
                 realm.Add(msg);
@@ -88,20 +86,16 @@ namespace MQTTtoRealm
             Console.WriteLine("\tWritten!");
         }
 
-        public class Message : RealmObject
-        {
+        public class IOTDataPoint : RealmObject {
             [PrimaryKey]
             [MapTo("_id")]
             public ObjectId Id { get; set; } = ObjectId.GenerateNewId();
-            [MapTo("applicationMessage")]
-            [Required]
-            public string ApplicationMessage { get; set; }
-            [MapTo("clientId")]
-            public string ClientId { get; set; }
-            [MapTo("topic")]
-            public string Topic { get; set; }
-            [MapTo("payload")]
-            public string Payload { get; set; }
+            [MapTo("_pk")]
+            public string Partition { get; set; }
+            [MapTo("device")]
+            public string DeviceName { get; set; }
+            [MapTo("reading")]
+            public int Reading { get; set; }
         }
     }
 }

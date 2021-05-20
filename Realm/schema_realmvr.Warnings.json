@@ -1,0 +1,32 @@
+{
+  "title": "Warnings",
+  "bsonType": "object",
+  "required": [
+    "_id",
+    "+pk",
+    "dismissed"
+  ],
+  "properties": {
+    "_id": {
+      "bsonType": "objectId"
+    },
+    "+pk": {
+      "bsonType": "string"
+    },
+    "_pk": {
+      "bsonType": "string"
+    },
+    "device": {
+      "bsonType": "string"
+    },
+    "warning": {
+      "bsonType": "string"
+    },
+    "type": {
+      "bsonType": "string"
+    },
+    "dismissed": {
+      "bsonType": "bool"
+    }
+  }
+}

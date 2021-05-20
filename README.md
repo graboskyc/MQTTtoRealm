@@ -7,13 +7,13 @@ This is a simple proof of concept to act as a middleware console app to take in 
 * Deploy an Atlas Cluster
 * Deploy a Realm App on that cluster
 * Have docker installed
-* Have a MQTT load generator or client (I was using [Home Assistant](https://www.home-assistant.io/integrations/mqtt/))
-
+* Have a MQTT load generator such [as mine](https://github.com/graboskyc/MQTTProducer) or [my mobile](https://github.com/graboskyc/MQTTProducer-Android)
+  
 ## Realm Setup
 * Turn on Sync Developer Mode
   * Choose the cluster you deployed earlier as the sync target cluster
-  * Database is `mqttRelay`
-  * Partition key is a `string` with field name `_pk` and is `required`
+  * Database is `realmvr`
+  * Schema is in the `Realm` folder of this repo
 * Turn on API Key authentication
 * Generate an API Key
 
