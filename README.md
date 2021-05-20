@@ -26,12 +26,11 @@ This is a simple proof of concept to act as a middleware console app to take in 
 ## One time initial setup
 * If this is the first time running, go back into Realm after the container starts, and disable developer mode
 * Disable the anonymous authentication
-* In the Atlas cluster you should now see a new DB as setup in the Realm Setup step with a new collection called `Message` and a JSON Schema has been applied to it in Realm.
+* In the Atlas cluster you should now see a new DB as setup in the Realm Setup step with a new collection called `realmvr` and a JSON Schema has been applied to it in Realm.
 * Restart your docker container
 
 ## Execution
-* Point your MQTT clients at this now running MQTT broker.
-* As an example, edit the Home Assistant configuration.yaml as shown [here](https://www.home-assistant.io/integrations/mqtt/)
+* Point your MQTT clients I mentioned above at this now running MQTT broker
 
 # Screenshots
 ![](Screenshots/ss01.png)
